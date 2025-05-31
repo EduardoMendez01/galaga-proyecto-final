@@ -7,33 +7,26 @@ class Player {
     this.speed = 5;
   }
   
-// Controles
+  // Controles
   move() {
-    if (keyIsDown(LEFT_ARROW)) {
-      this.x -= this.speed;
-    }
-    if (keyIsDown(RIGHT_ARROW)) {
-      this.x += this.speed;
-    }
+    if (keyIsDown(LEFT_ARROW)) this.x -= this.speed;
+    if (keyIsDown(RIGHT_ARROW)) this.x += this.speed;
     this.x = constrain(this.x, this.size / 2, width - this.size / 2);
   }
-
+  
   display() {
-    fill(0, 255, 0);
-    triangle(
-      this.x, this.y - this.size / 2,
-      this.x - this.size / 2, this.y + this.size / 2,
-      this.x + this.size / 2, this.y + this.size / 2
-    );
+    push();
+    imageMode(CENTER);
+    image(playerImg, this.x, this.y, this.size, this.size);
+    pop();
   }
   
   // Disparar
   shoot() {
-    playerProjectiles.push(
-      new Projectile(this.x, this.y - this.size / 2, -7, 'player')
-    );
+    playerProjectiles.push(new Projectile(this.x, this.y - this.size/2, -7, 'player'));
   }
-
+  
+  // Vidas
   hit() {
     this.lives--;
   }

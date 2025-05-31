@@ -8,6 +8,20 @@ let currentLevel = 1;
 let gameState = 'start';
 let highscores = [];
 
+// Imágenes
+let bgImg;
+let playerImg;
+let enemyImg;
+let toughEnemyImg;
+
+
+function preload() {
+  bgImg = loadImage('fondo galaga.png');
+  playerImg = loadImage('jugador.png');
+  enemyImg = loadImage('enemigo.png');
+  toughEnemyImg = loadImage('enemigo res.png');
+}
+
 function setup() {
   createCanvas(600, 700);
   textFont('monospace', 18);
@@ -15,8 +29,10 @@ function setup() {
   loadHighscores();
 }
 
+// Fondo
 function draw() {
-  background(20);
+  image(bgImg, 0, 0, width, height);
+
   if (gameState === 'start') {
     drawStartScreen();
   } else if (gameState === 'playing') {
@@ -31,7 +47,7 @@ function draw() {
 function drawStartScreen() {
   fill(255);
   textAlign(CENTER);
-  text('GALAGA - 2 NIVELES', width/2, height/2 - 40);
+  text('GALAGA', width/2, height/2 - 40);
   text('Presiona ENTER para empezar', width/2, height/2);
   text('Top 5 mejores puntuaciones:', width/2, height/2 + 60);
   highscores.forEach((s, i) => {
@@ -44,7 +60,7 @@ function keyPressed() {
     startLevel(1);
     gameState = 'playing';
   }
-  if (gameState === 'playing' && keyCode === 32) {
+  if (gameState === 'playing' && keyCode === 32) { // espacio
     player.shoot();
   }
   if (gameState === 'gameOver' && keyCode === ENTER) {
@@ -56,8 +72,8 @@ function runGame() {
   // Jugador
   player.move();
   player.display();
-  
-  // Proyectiles del jugador
+
+  // Proyectiles jugador
   for (let p of playerProjectiles) {
     p.update();
     p.display();
@@ -67,28 +83,27 @@ function runGame() {
     p.update();
     p.display();
   }
-  
+
   // Enemigos
   for (let e of enemies) {
     e.move();
     e.display();
     e.tryShoot();
   }
-  
+
+  // Colisiones y limpieza
   handleCollisions();
   cleanupEntities();
 
   drawHUD();
-  
+
+  // Fin de nivel o juego
   if (enemies.length === 0) {
-    if (currentLevel < 2) {
-      gameState = 'levelUp';
-    } else {
-      gameState = 'gameOver';
-      updateHighscores(score);
-    }
+    gameState = (currentLevel < 3) ? 'levelUp' : 'gameOver';
+    if (currentLevel === 3) updateHighscores(score);
   }
-  
+
+  // Verificar vidas
   if (player.lives <= 0) {
     gameState = 'gameOver';
     updateHighscores(score);
@@ -104,24 +119,27 @@ function drawHUD() {
 }
 
 function handleCollisions() {
-  // Proyectiles enemigos hacia el jugador
+  // Proyectiles enemigos vs jugador
   for (let p of enemyProjectiles) {
     if (dist(p.x, p.y, player.x, player.y) < (p.size + player.size)/2) {
       player.hit();
       p.y = height + 100;
     }
   }
-  // Proyectiles jugador hacia los enemigos
+  // Proyectiles jugador vs enemigos
   for (let p of playerProjectiles) {
     for (let e of enemies) {
       if (dist(p.x, p.y, e.x, e.y) < (p.size + e.size)/2) {
         p.y = -100;
         if (e.hit()) {
-          score += (e.type === 'tough') ? 3 : 1;
+          if (e.type === 'tough') score += 3;
+          else if (e.type === 'boss') score += 10;
+          else score++;
         }
       }
     }
   }
+  // Enemigos colision con el jugador
   for (let e of enemies) {
     if (e.isOffScreen() || dist(e.x, e.y, player.x, player.y) < (e.size + player.size)/2) {
       player.hit();
@@ -140,12 +158,13 @@ function startLevel(n) {
   currentLevel = n;
   player.lives = max(player.lives, 1);
   enemies = [];
-  if (n === 1) score = 0;
-  let cols = 5, rows = 1 + n; 
+  score = (n === 1 ? 0 : score);
+  let cols = 5, rows = 2 + n;
   for (let i = 0; i < cols; i++) {
     for (let j = 0; j < rows; j++) {
-      let type = (n === 2 && i === 0 && j === 0) ? 'tough' : 'normal';
-      let pattern = n; 
+      let type = 'normal', pattern = n;
+      if (n >= 2 && i === 0 && j === 0) type = 'tough';
+      if (n === 3 && i === 2 && j === 0) type = 'boss';
       enemies.push(new Enemy(80 + i*100, -j*60, type, pattern));
     }
   }
@@ -154,7 +173,7 @@ function startLevel(n) {
 function nextLevel() {
   fill(255);
   textAlign(CENTER);
-  text(`¡Nivel ${currentLevel + 1}!`, width/2, height/2);
+  text(` Nivel ${currentLevel + 1}!`, width/2, height/2);
   if (frameCount % 120 === 0) {
     startLevel(currentLevel + 1);
     gameState = 'playing';
@@ -170,13 +189,11 @@ function drawGameOver() {
 }
 
 function loadHighscores() {
-  // Cargar top 5
   let hs = getItem('highscores');
   highscores = hs ? hs : [];
 }
 
 function updateHighscores(s) {
-  // Actualizar tabla de puntaje
   highscores.push(s);
   highscores.sort((a, b) => b - a);
   highscores = highscores.slice(0, 5);

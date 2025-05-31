@@ -5,38 +5,49 @@ class Enemy {
     this.size = 40;
     this.type = type;          
     this.pattern = pattern;     
-    this.health = (type === 'tough') ? 3 : 1;
-    this.speed = (pattern === 1) ? 1 : 2;
-    this.direction = 1;      
+    this.health = type === 'tough' ? 3 : (type === 'boss' ? 7 : 1);
+    this.speed = 1 + (pattern - 1) * 0.5;
+    this.dir = 1;
+    this.lastShot = 0;
+    this.shotInterval = 120 - currentLevel * 10;
   }
   
-
   move() {
     if (this.pattern === 1) {
       this.y += this.speed;
-    } else {
-      this.x += this.direction * this.speed;
+    } else if (this.pattern === 2) {
+      this.x += this.speed * this.dir;
       this.y += this.speed / 2;
-      if (this.x < this.size/2 || this.x > width - this.size/2) {
-        this.direction *= -1;
-      }
+      if (this.x < this.size/2 || this.x > width - this.size/2) this.dir *= -1;
+    } else {
+      this.x += this.speed * cos(frameCount / 20);
+      this.y += this.speed * sin(frameCount / 20);
     }
   }
   
+  // Disparar
   tryShoot() {
-    if (currentLevel === 2 && random(1) < 0.005) {
-      enemyProjectiles.push(
-        new Projectile(this.x, this.y + this.size/2, 5, 'enemy')
-      );
+    if (currentLevel > 1 && frameCount - this.lastShot > this.shotInterval) {
+      enemyProjectiles.push(new Projectile(this.x, this.y + this.size/2, 4 + currentLevel, 'enemy'));
+      this.lastShot = frameCount;
     }
   }
   
   display() {
-    if (this.type === 'tough') fill(200, 100, 100);
-    else fill(255, 100, 0);
-    noStroke();
-    ellipse(this.x, this.y, this.size);
+  push();
+  imageMode(CENTER);
+  let imgToUse = enemyImg;
+
+  if (this.type === 'tough') {
+    imgToUse = toughEnemyImg;
+  } else if (this.type === 'boss') {
+    imgToUse = enemyImg;
   }
+
+  let s = this.size * (this.type === 'boss' ? 2 : 1);
+  image(imgToUse, this.x, this.y, s, s);
+  pop();
+}
   
   isOffScreen() {
     return this.y > height + this.size;
