@@ -16,11 +16,12 @@ let toughEnemyImg;
 
 
 function preload() {
-  bgImg = loadImage('fondo galaga.png');
-  playerImg = loadImage('jugador.png');
-  enemyImg = loadImage('enemigo.png');
-  toughEnemyImg = loadImage('enemigo res.png');
+  bgImg = loadImage('imagenes/fondo galaga.png');
+  playerImg = loadImage('imagenes/jugador.png');
+  enemyImg = loadImage('imagenes/enemigo.png');
+  toughEnemyImg = loadImage('imagenes/enemigo res.png');
 }
+
 
 function setup() {
   createCanvas(600, 700);
