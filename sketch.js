@@ -1,4 +1,3 @@
-// Variables globales
 let player;
 let enemies = [];
 let playerProjectiles = [];
