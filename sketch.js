@@ -13,15 +13,15 @@ let bgImg;
 let playerImg;
 let enemyImg;
 let toughEnemyImg;
-
+let bossImg;
 
 function preload() {
   bgImg = loadImage('imagenes/fondo galaga.png');
   playerImg = loadImage('imagenes/jugador.png');
   enemyImg = loadImage('imagenes/enemigo.png');
   toughEnemyImg = loadImage('imagenes/enemigo res.png');
+  bossImg = loadImage('imagenes/jefe.png');
 }
-
 
 function setup() {
   createCanvas(600, 700);
@@ -190,9 +190,9 @@ function drawGameOver() {
 }
 
 function loadHighscores() {
-  let hs = getItem('highscores');
-  highscores = hs ? hs : [];
+  highscores = []; 
 }
+
 
 function updateHighscores(s) {
   highscores.push(s);
